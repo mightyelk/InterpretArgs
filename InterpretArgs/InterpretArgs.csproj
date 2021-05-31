@@ -7,7 +7,7 @@
     <ProjectGuid>{5DCF34A2-1947-4E9B-91F9-078A39DA8552}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MightyElk</RootNamespace>
+    <RootNamespace>MightyElk.InterpretArgs</RootNamespace>
     <AssemblyName>InterpretArgs</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
