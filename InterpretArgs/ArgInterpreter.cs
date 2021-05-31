@@ -16,6 +16,12 @@ namespace InterpretArgs
             Number,
             DateTime,
         }
+
+        /// <summary>
+        /// returns a formatted usage page
+        /// </summary>
+        /// <param name="exeFileName">name of executing assembly for first line of usage page: ASSEMBLY.EXE [params]</param>
+        /// <returns></returns>
         public string GetUsage(string exeFileName)
         {
             var output = new List<string>();
@@ -40,8 +46,6 @@ namespace InterpretArgs
                 }
 
             }
-
-
             StringBuilder sb = new StringBuilder();
             sb.AppendLine();
             foreach (var a in Arguments)
@@ -54,11 +58,10 @@ namespace InterpretArgs
             }
 
             return string.Join(" ", output.ToArray()) + sb.ToString(); ;
-
         }
 
         
-
+        //for future
         public string[] ArgumentDelimiters { get; set; }
 
 
@@ -213,8 +216,14 @@ namespace InterpretArgs
             return true;
         }
 
-
-        private  Array FindAllValues(string[] args, int currentPos, Type elementType) 
+        /// <summary>
+        /// Function iterates the command line arguments after the array parameter and tries to fetch all values into an array.
+        /// </summary>
+        /// <param name="args">All command line arguments</param>
+        /// <param name="currentPos">Current position (index) of argument</param>
+        /// <param name="elementType">Type to look for</param>
+        /// <returns></returns>
+        private Array FindAllValues(string[] args, int currentPos, Type elementType) 
         {
             //find all values
             int n = currentPos + 1;
@@ -238,7 +247,13 @@ namespace InterpretArgs
             return z;
         }
 
-        
+        /// <summary>
+        /// Returns true if the input value [s] could be cast into type [argType] 
+        /// </summary>
+        /// <param name="s">input value</param>
+        /// <param name="argType">type of return value</param>
+        /// <param name="value">return value</param>
+        /// <returns></returns>
         private bool TryGetValue(string s, Type argType, out object value)
         {
             string typName = argType.FullName;
