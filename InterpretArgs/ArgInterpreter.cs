@@ -1,0 +1,274 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+
+namespace InterpretArgs
+{
+    public class ArgInterpreter
+    {
+        public enum ValueTypeEnum
+        {
+            String,
+            Number,
+            DateTime,
+        }
+        public string GetUsage(string exeFileName)
+        {
+            var output = new List<string>();
+
+            output.Add(exeFileName.ToUpper());
+
+            foreach(var a in Arguments)
+            {
+                var arg = a.Value;
+                if (string.IsNullOrWhiteSpace(arg.Name))
+                    output.Add(arg.ValueDescription);
+                else
+                {
+                    string line = (arg.Mandatory) ? "-" + arg.Name+"{0}": "[-" + arg.Name + "{0}]";
+                    if (!arg.TypeOfValue.Equals(typeof(Boolean)))
+                        line = string.Format(line,
+                            string.Format((arg.IsArray) ? " {0} {0}..." : " {0}", arg.ValueDescription));
+                    else
+                        line = string.Format(line, "");
+
+                    output.Add(line);
+                }
+
+            }
+
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine();
+            foreach (var a in Arguments)
+            {
+                var arg = a.Value;
+                if (string.IsNullOrWhiteSpace(arg.Name))
+                    continue;
+
+                sb.AppendLine(string.Format("\t-{0} {1}\t{2}", arg.Name, arg.ValueDescription, arg.Description));
+            }
+
+            return string.Join(" ", output.ToArray()) + sb.ToString(); ;
+
+        }
+
+        
+
+        public string[] ArgumentDelimiters { get; set; }
+
+
+        public Dictionary<string, Argument> Arguments { get; private set; }
+
+       
+        public ArgInterpreter()
+        {
+            Arguments = new Dictionary<string, Argument>();
+            ArgumentDelimiters = new string[] { "-" };
+        }
+
+        /// <summary>
+        /// Registers a flag (boolean) with the interpreter
+        /// </summary>
+        /// <param name="name">Name of parameter without - or  /</param>
+        /// <param name="description">Description for the generated usage page.</param>
+        public void RegisterFlag(string name, string description)
+        {
+            RegisterArg(name, null, description, false, typeof(bool), false);
+        }
+
+
+        /// <summary>
+        /// Registers the default parameter with the interpreter.
+        /// </summary>
+        /// <param name="valueDescription">Describes the passed value for a parameter, e.g. filename or pagenumber.</param>
+        /// <param name="valueType">Type of value after parameter.</param>
+        public void RegisterDefault(string valueDescription,ValueTypeEnum valueType)
+        {
+            RegisterArg("", valueDescription, null, false, valueType, false);
+        }
+
+        /// <summary>
+        /// Registers a parameter with the interpreter.
+        /// </summary>
+        /// <param name="name">Name of parameter without - or  /</param>
+        /// <param name="valueDescription">Describes the passed value for a parameter, e.g. filename or pagenumber.</param>
+        /// <param name="description">Description for the generated usage page.</param>
+        /// <param name="mandatory">Is this parameter mandatory?</param>
+        /// <param name="valueType">Type of value after parameter.</param>
+        /// <param name="isArray">True when multiple values are allowed for parameter.</param>
+        public void RegisterArg(string name, string valueDescription, string description, bool mandatory, ValueType valueType, bool isArray)
+        {
+            Type t = typeof(string);
+            switch (valueType)
+            {
+                case ValueTypeEnum.DateTime: t = typeof(DateTime); break;
+                //case ValueTypeEnum.Flag: t = typeof(Boolean); break;
+                case ValueTypeEnum.String: t = typeof(string); break;
+                case ValueTypeEnum.Number: t = typeof(int); break;
+            }
+            RegisterArg(name, valueDescription, description, mandatory, t, isArray);
+        }
+
+
+
+        private void RegisterArg(string name, string valueDescription, string description, bool mandatory, Type valueType, bool isArray)
+        {
+            if (Arguments.ContainsKey(name.ToLower()))
+                throw new Exception("Argument already registerd.");
+
+            
+            Argument arg = new Argument(valueType); ;
+
+            arg.Name = name.ToLower();
+            arg.Description = description;
+            arg.Mandatory = mandatory;
+            arg.IsArray = isArray;
+            arg.ValueDescription = valueDescription;
+            Arguments.Add(arg.Name, arg);
+        }
+
+
+        /// <summary>
+        /// Evaluates the passed string array.
+        /// </summary>
+        /// <param name="args">Usually the args[] of the main program.</param>
+        public void SetArgs(string[] args)
+        {
+            for (int i = 0; i < args.Length; i++)
+            {
+                //default argument(s) without name
+                if (i==0 & !ArgumentDelimiters.Contains(args[0].Substring(0, 1)))
+                {
+                    Argument arg = Arguments[""];
+                    if (arg.IsArray)
+                    {
+                        var z = FindAllValues(args, -1, arg.TypeOfValue);
+                        arg.SetValue(z);
+                    }
+                    else
+                        arg.SetValue(args[0]);
+                }
+
+                //arg starts with one of the specified characters
+                else if (ArgumentDelimiters.Contains(args[i].Substring(0, 1)))
+                {
+                    string name = args[i].Substring(1);
+
+                    int whiteSpaceIndex = name.IndexOfAny(new char[] { ' ', '\t' });
+
+                    if (whiteSpaceIndex > 0)
+                        name = name.Substring(0, whiteSpaceIndex);
+
+                    Argument arg = Arguments[name];
+
+                    //just a flag argument without any parameters beeing passed
+                    if (arg.TypeOfValue.Equals(typeof(bool)))
+                    {
+                        arg.SetValue(true);
+                    }
+                    else
+                    {
+
+                        if (arg.IsArray && args.Length > i + 1)
+                        {
+                            var z = FindAllValues(args, i, arg.TypeOfValue);
+                            arg.SetValue(z);
+                        }
+                        else
+                        {
+                            //is there a value (argument without a specified character) behind the argument? 
+                            if (args.Length > i + 1 && !ArgumentDelimiters.Contains(args[i + 1].Substring(0, 1)))
+                            {
+                                //does that value match the type?
+                                if (TryGetValue(args[i + 1], arg.TypeOfValue, out object value))
+                                {
+                                    arg.SetValue(value);
+                                }
+
+                            }
+                            else
+                                throw new Exception("Invalid argument parameter.");
+
+                        }
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Returns true if all mandatory parameters are set
+        /// </summary>
+        /// <returns></returns>
+        public bool CheckForMandatoryArgs()
+        {
+            foreach (var a in Arguments)
+                if (a.Value.Mandatory & !a.Value.IsSet)
+                    return false;
+            return true;
+        }
+
+
+        private  Array FindAllValues(string[] args, int currentPos, Type elementType) 
+        {
+            //find all values
+            int n = currentPos + 1;
+            List<string> arrayValues = new List<string>();
+            while (n < args.Length && !ArgumentDelimiters.Contains(args[n].Substring(0, 1)))
+                arrayValues.Add(args[n++]);
+
+
+            //make a new array of according type
+            var z = Array.CreateInstance(elementType, arrayValues.Count);
+
+            for (n = 0; n < arrayValues.Count; n++)
+            {
+                if (TryGetValue(arrayValues[n], elementType, out object value))
+                {
+                    z.SetValue(value, n);
+                }
+                else
+                    throw new Exception("Invalid argument parameter.");
+            }
+            return z;
+        }
+
+        
+        private bool TryGetValue(string s, Type argType, out object value)
+        {
+            string typName = argType.FullName;
+
+
+            if (Regex.IsMatch(typName, "System.[U]?Int[16|32|64]*"))
+            {
+                if ( int.TryParse(s, out int v))
+                {
+                    value = v;
+                    return true;
+                }
+            }
+
+            if (argType.Equals(typeof(DateTime)))
+            {
+                if (DateTime.TryParse(s, out DateTime d))
+                {
+                    value = d;
+                    return true;
+                }
+            }
+            if (argType.Equals(typeof(System.String)))
+            {
+                value = s;
+                return true;
+            }
+
+            value = null;
+            return false;
+        }
+    }
+}
