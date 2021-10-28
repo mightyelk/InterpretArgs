@@ -86,7 +86,7 @@ namespace InterpretArgs
 
 
         /// <summary>
-        /// Registers the default parameter with the interpreter.
+        /// Registers the default parameter with the interpreter. The default parameter is the one without a dash/slash before it e.g. "tool.exe /a file.txt" file.txt would be the default parameter.
         /// </summary>
         /// <param name="valueDescription">Describes the passed value for a parameter, e.g. filename or pagenumber.</param>
         /// <param name="valueType">Type of value after parameter.</param>
@@ -284,6 +284,24 @@ namespace InterpretArgs
 
             value = null;
             return false;
+        }
+
+        /// <summary>
+        /// Returns an Argument
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public Argument GetArgument(string name)
+        {
+            return Arguments[name];
+        }
+        /// <summary>
+        /// Returns the default Argument
+        /// </summary>
+        /// <returns></returns>
+        public Argument GetDefaultArgument()
+        {
+            return Arguments[""];
         }
     }
 }
