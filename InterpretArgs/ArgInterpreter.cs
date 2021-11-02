@@ -104,7 +104,7 @@ namespace InterpretArgs
         /// <param name="mandatory">Is this parameter mandatory?</param>
         /// <param name="valueType">Type of value after parameter.</param>
         /// <param name="isArray">True when multiple values are allowed for parameter.</param>
-        public void RegisterArg(string name, string valueDescription, string description, bool mandatory, ValueType valueType, bool isArray)
+        public void RegisterArg(string name, string valueDescription, string description, bool mandatory, ValueTypeEnum valueType, bool isArray)
         {
             Type t = typeof(string);
             switch (valueType)
