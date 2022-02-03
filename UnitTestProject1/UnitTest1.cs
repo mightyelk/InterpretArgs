@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace UnitTestProject1
+namespace InterpretArgsTests
 {
     [TestClass]
     public class UnitTest1
@@ -24,7 +24,7 @@ namespace UnitTestProject1
             Assert.AreEqual(interpreter.Arguments[""].StringVal, "default");
             Assert.IsTrue(interpreter.Arguments["test"].BoolVal);
             Assert.AreEqual(interpreter.Arguments["name"].StringVal, "jo");
-
+            Assert.IsTrue(interpreter.Arguments["name"].IsSet);
             CollectionAssert.AreEqual(new int[] { 1, 2, 3 }, interpreter.Arguments["arr"].IntArrayVal);
 
 
