@@ -144,9 +144,13 @@ namespace InterpretArgs
         {
             for (int i = 0; i < args.Length; i++)
             {
+
+
                 //default argument(s) without name
                 if (i==0 & !ArgumentDelimiters.Contains(args[0].Substring(0, 1)))
                 {
+                    if (!Arguments.ContainsKey("")) //no default argument given?
+                        continue;
                     Argument arg = Arguments[""];
                     if (arg.IsArray)
                     {
