@@ -43,33 +43,69 @@ namespace InterpretArgsTests
 
 
         [TestMethod]
-        public void TestMethod2()
+        public void NotAnArrayWithMultipleValues()
         {
             var interpreter = new InterpretArgs.ArgInterpreter();
 
-            interpreter.RegisterDefault("filename", InterpretArgs.ArgInterpreter.ValueTypeEnum.String);
-
-            interpreter.RegisterFlag("test", "Testparameter");
-            Assert.ThrowsException<Exception>(()=> { interpreter.RegisterFlag("test", "Testparameter"); });
-
-
             interpreter.RegisterArg("noarray", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, false);
-            interpreter.RegisterArg("isarray", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, true);
-
+            
 
             Assert.ThrowsException<Exception>(()=> { 
                 interpreter.SetArgs("-noarray a b c".Split(' ')); 
             });
 
-            Assert.ThrowsException<Exception>(() =>
-            {
-                interpreter.SetArgs("-isarray".Split(' '));
+            Assert.ThrowsException<Exception>(() => {
+                interpreter.SetArgs("-noarray a b c -nextarg".Split(' '));
             });
 
 
-
-
         }
+
+        [TestMethod]
+        public void ArrayWithoutValues()
+        {
+            var interpreter = new InterpretArgs.ArgInterpreter();
+
+            interpreter.RegisterArg("isarray", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, true);
+
+            Assert.ThrowsException<Exception>(() =>
+            {
+                interpreter.SetArgs("-isarray");
+            });
+
+            Assert.ThrowsException<Exception>(() =>
+            {
+                interpreter.SetArgs("-isarray", "-nextarg");
+            });
+        }
+
+        [TestMethod]
+        public void NotRegisteredArgument()
+        {
+            var interpreter = new InterpretArgs.ArgInterpreter();
+
+            interpreter.RegisterArg("registered", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, false);
+
+            Assert.ThrowsException<Exception>(() =>
+            {
+                interpreter.SetArgs("-registered","yes","-unexpectedFlag");
+            });
+        }
+
+        [TestMethod]
+        public void WrongValueType()
+        {
+            var interpreter = new InterpretArgs.ArgInterpreter();
+
+            interpreter.RegisterArg("aninteger", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.Number, false);
+
+            Assert.ThrowsException<InvalidCastException>(() =>
+            {
+                interpreter.SetArgs("-aninteger", "clearlynotanumber");
+            });
+        }
+
+
 
         [TestMethod]
         public void TestUsage()
