@@ -32,18 +32,18 @@ namespace InterpretArgs
             {
                 var arg = a.Value;
                 if (string.IsNullOrWhiteSpace(arg.Name))
-                    output.Add(arg.ValueDescription);
-                else
                 {
-                    string line = (arg.Mandatory) ? "-" + arg.Name+"{0}": "[-" + arg.Name + "{0}]";
-                    if (!arg.TypeOfValue.Equals(typeof(Boolean)))
-                        line = string.Format(line,
-                            string.Format((arg.IsArray) ? " {0} {0}..." : " {0}", arg.ValueDescription));
-                    else
-                        line = string.Format(line, "");
-
-                    output.Add(line);
+                    output.Add(arg.ValueDescription);
+                    continue;
                 }
+                
+                string line = (arg.Mandatory) ? "-" + arg.Name + "{0}" : "[-" + arg.Name + "{0}]";
+                if (!arg.TypeOfValue.Equals(typeof(Boolean)))
+                    line = string.Format(line, string.Format((arg.IsArray) ? " {0} {0}..." : " {0}", arg.ValueDescription));
+                else
+                    line = string.Format(line, "");
+
+                output.Add(line);
 
             }
             StringBuilder sb = new StringBuilder();
@@ -145,24 +145,26 @@ namespace InterpretArgs
             for (int i = 0; i < args.Length; i++)
             {
 
-
                 //default argument(s) without name
                 if (i==0 & !ArgumentDelimiters.Contains(args[0].Substring(0, 1)))
                 {
                     if (!Arguments.ContainsKey("")) //no default argument given?
                         continue;
+
                     Argument arg = Arguments[""];
                     if (arg.IsArray)
                     {
                         var z = FindAllValues(args, -1, arg.TypeOfValue);
                         arg.SetValue(z);
+                        continue;
                     }
-                    else
-                        arg.SetValue(args[0]);
+                    
+                    arg.SetValue(args[0]);
+                    continue;
                 }
 
                 //arg starts with one of the specified characters
-                else if (ArgumentDelimiters.Contains(args[i].Substring(0, 1)))
+                if (ArgumentDelimiters.Contains(args[i].Substring(0, 1)))
                 {
                     string name = args[i].Substring(1);
 
@@ -177,33 +179,35 @@ namespace InterpretArgs
                     if (arg.TypeOfValue.Equals(typeof(bool)))
                     {
                         arg.SetValue(true);
+                        continue;
                     }
-                    else
+
+                    //are there multiple values without a specified charagter behind the argument?
+                    if (arg.IsArray && args.Length > i + 1)
                     {
-
-                        if (arg.IsArray && args.Length > i + 1)
-                        {
-                            var z = FindAllValues(args, i, arg.TypeOfValue);
-                            arg.SetValue(z);
-                        }
-                        else
-                        {
-                            //is there a value (argument without a specified character) behind the argument? 
-                            if (args.Length > i + 1 && !ArgumentDelimiters.Contains(args[i + 1].Substring(0, 1)))
-                            {
-                                //does that value match the type?
-                                if (TryGetValue(args[i + 1], arg.TypeOfValue, out object value))
-                                {
-                                    arg.SetValue(value);
-                                }
-
-                            }
-                            else
-                                throw new Exception("Invalid argument parameter.");
-
-                        }
+                        var z = FindAllValues(args, i, arg.TypeOfValue);
+                        arg.SetValue(z);
+                        continue;
                     }
+                    
+                    
+                    //is there a value (argument without a specified character) behind the argument? 
+                    if (args.Length > i + 1 && !ArgumentDelimiters.Contains(args[i + 1].Substring(0, 1)))
+                    {
+                        //does that value match the type?
+                        if (TryGetValue(args[i + 1], arg.TypeOfValue, out object value))
+                        {
+                            arg.SetValue(value);
+                        }
+                        continue;
+                    }
+
+
+
+                    throw new Exception(String.Format("Invalid argument parameter '{0}'.", name));
+
                 }
+                throw new Exception(String.Format("Unexpected parameter '{0}'", args[i]));
             }
         }
 
