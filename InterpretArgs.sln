@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterpretArgs", "InterpretArgs\InterpretArgs.csproj", "{5DCF34A2-1947-4E9B-91F9-078A39DA8552}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterpretArgsTests", "UnitTestProject1\InterpretArgsTests.csproj", "{CD014C14-08CA-4BBD-8FE8-019E1A703613}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterpretArgsTests", "InterpretArgsTests\InterpretArgsTests.csproj", "{CD014C14-08CA-4BBD-8FE8-019E1A703613}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
