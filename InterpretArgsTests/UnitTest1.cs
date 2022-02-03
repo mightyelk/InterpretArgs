@@ -37,7 +37,40 @@ namespace InterpretArgsTests
             CollectionAssert.AreEqual(new string[] { "a.txt", "b.gif", "c.jpg" }, interpreter.Arguments[""].StringArrayVal);
 
             //interpreter.SetArgs(new string[] { "-mult3", "1", "a", "3" });
+
+            
         }
+
+
+        [TestMethod]
+        public void TestMethod2()
+        {
+            var interpreter = new InterpretArgs.ArgInterpreter();
+
+            interpreter.RegisterDefault("filename", InterpretArgs.ArgInterpreter.ValueTypeEnum.String);
+
+            interpreter.RegisterFlag("test", "Testparameter");
+            Assert.ThrowsException<Exception>(()=> { interpreter.RegisterFlag("test", "Testparameter"); });
+
+
+            interpreter.RegisterArg("noarray", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, false);
+            interpreter.RegisterArg("isarray", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, true);
+
+
+            Assert.ThrowsException<Exception>(()=> { 
+                interpreter.SetArgs("-noarray a b c".Split(' ')); 
+            });
+
+            Assert.ThrowsException<Exception>(() =>
+            {
+                interpreter.SetArgs("-isarray".Split(' '));
+            });
+
+
+
+
+        }
+
         [TestMethod]
         public void TestUsage()
         {
