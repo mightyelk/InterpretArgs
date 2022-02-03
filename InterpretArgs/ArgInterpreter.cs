@@ -125,7 +125,7 @@ namespace InterpretArgs
                 throw new Exception("Argument already registerd.");
 
             
-            Argument arg = new Argument(valueType); ;
+            Argument arg = new Argument(valueType); 
 
             arg.Name = name.ToLower();
             arg.Description = description;
@@ -140,11 +140,11 @@ namespace InterpretArgs
         /// Evaluates the passed string array.
         /// </summary>
         /// <param name="args">Usually the args[] of the main program.</param>
-        public void SetArgs(string[] args)
-        {
+        public void SetArgs(params string[] args)
+        { 
+            Argument lastArg = null;
             for (int i = 0; i < args.Length; i++)
             {
-
                 //default argument(s) without name
                 if (i==0 & !ArgumentDelimiters.Contains(args[0].Substring(0, 1)))
                 {
@@ -152,6 +152,7 @@ namespace InterpretArgs
                         continue;
 
                     Argument arg = Arguments[""];
+                    lastArg = arg;
                     if (arg.IsArray)
                     {
                         var z = FindAllValues(args, -1, arg.TypeOfValue);
@@ -173,7 +174,13 @@ namespace InterpretArgs
                     if (whiteSpaceIndex > 0)
                         name = name.Substring(0, whiteSpaceIndex);
 
+                    if (!Arguments.ContainsKey(name))
+                    {
+                        throw new Exception(String.Format("Not registered argument passed '{0}'", name));
+                    }
                     Argument arg = Arguments[name];
+                    lastArg = arg;
+
 
                     //just a flag argument without any parameters beeing passed
                     if (arg.TypeOfValue.Equals(typeof(bool)))
@@ -182,32 +189,46 @@ namespace InterpretArgs
                         continue;
                     }
 
-                    //are there multiple values without a specified charagter behind the argument?
-                    if (arg.IsArray && args.Length > i + 1)
-                    {
-                        var z = FindAllValues(args, i, arg.TypeOfValue);
-                        arg.SetValue(z);
-                        continue;
-                    }
-                    
-                    
                     //is there a value (argument without a specified character) behind the argument? 
-                    if (args.Length > i + 1 && !ArgumentDelimiters.Contains(args[i + 1].Substring(0, 1)))
+                    if (!arg.IsArray && args.Length > i + 1 && !ArgumentDelimiters.Contains(args[i + 1].Substring(0, 1)))
                     {
                         //does that value match the type?
                         if (TryGetValue(args[i + 1], arg.TypeOfValue, out object value))
                         {
                             arg.SetValue(value);
+                            i++;
+                            continue;
                         }
-                        continue;
+                        throw new InvalidCastException("Passed value does not match the arguments type.");
                     }
 
+                    //are there multiple values without a specified charagter behind the argument?
+                    if (arg.IsArray 
+                        && args.Length > i + 1
+                        && !ArgumentDelimiters.Contains(args[i + 1].Substring(0, 1)))
+                    {
+                        var z = FindAllValues(args, i, arg.TypeOfValue);
+                        arg.SetValue(z);
+                        i += z.Length;
+                        continue;
+                    }
+                    
+                    
+                    
 
-
-                    throw new Exception(String.Format("Invalid argument parameter '{0}'.", name));
+                    //again something went wrong if code gets here
+                    //Array without values?
+                    throw new Exception(String.Format("Missing values after argument '{0}'.", name));
 
                 }
-                throw new Exception(String.Format("Unexpected parameter '{0}'", args[i]));
+
+
+                //something went wrong if the code gets here
+                //last argument wasn't an array but there are values (not new arguments) behind
+                if (!lastArg.IsArray)
+                {
+                    throw new Exception(String.Format("Unexpected value '{0}' behind argument '{1}'", args[i], lastArg.Name));
+                }
             }
         }
 
