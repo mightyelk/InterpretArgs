@@ -134,14 +134,20 @@ namespace InterpretArgsTests
         public void TestDefaultValues()
         {
             var interpreter = new InterpretArgs.ArgInterpreter();
-            interpreter.RegisterArg("test", "test", "for testing", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, false, "TEST");
+            interpreter.RegisterArg("test", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, false, "TEST");
+            interpreter.RegisterArg("test2", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.Number, false, 123);
+            interpreter.RegisterArg("test3", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.DateTime, false, new DateTime(2022,04,19));
+            interpreter.RegisterArg("test4", "", "", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, false, "TEST");
+            interpreter.SetArgs("-test4","asdf");
 
-            interpreter.SetArgs();
 
+            Assert.IsFalse(interpreter.Arguments["test"].IsSet);
+            Assert.AreEqual(interpreter.Arguments["test"].StringVal, "TEST"); //Default value set above
+            Assert.AreEqual(interpreter.Arguments["test2"].IntVal, 123 ); //Default value set above
+            Assert.AreEqual(interpreter.Arguments["test3"].DateVal, new DateTime(2022,04,19)); //Default value set above
 
-            var arg = interpreter.Arguments["test"];
-            Assert.IsFalse(arg.IsSet);
-            Assert.AreEqual(arg.StringVal, "TEST"); //Default value set above
+            Assert.IsTrue(interpreter.Arguments["test4"].IsSet);
+            Assert.AreEqual(interpreter.Arguments["test4"].StringVal, "asdf"); //Default value set above is overwritten by arguments
         }
     }   
 }
