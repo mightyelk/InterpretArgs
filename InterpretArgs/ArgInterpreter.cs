@@ -81,7 +81,7 @@ namespace InterpretArgs
         /// <param name="description">Description for the generated usage page.</param>
         public void RegisterFlag(string name, string description)
         {
-            RegisterArg(name, null, description, false, typeof(bool), false);
+            RegisterArg(name, null, description, false, typeof(bool), false, null);
         }
 
 
@@ -105,6 +105,20 @@ namespace InterpretArgs
         /// <param name="valueType">Type of value after parameter.</param>
         /// <param name="isArray">True when multiple values are allowed for parameter.</param>
         public void RegisterArg(string name, string valueDescription, string description, bool mandatory, ValueTypeEnum valueType, bool isArray)
+            => RegisterArg(name, valueDescription, description, mandatory, valueType, isArray, null);
+
+
+        /// <summary>
+        /// Registers a parameter with the interpreter.
+        /// </summary>
+        /// <param name="name">Name of parameter without - or  /</param>
+        /// <param name="valueDescription">Describes the passed value for a parameter, e.g. filename or pagenumber.</param>
+        /// <param name="description">Description for the generated usage page.</param>
+        /// <param name="mandatory">Is this parameter mandatory?</param>
+        /// <param name="valueType">Type of value after parameter.</param>
+        /// <param name="isArray">True when multiple values are allowed for parameter.</param>
+        /// <param name="defaultValue">Default value when a non mandatory parameter is obmitted.</param>
+        public void RegisterArg(string name, string valueDescription, string description, bool mandatory, ValueTypeEnum valueType, bool isArray, object defaultValue)
         {
             Type t = typeof(string);
             switch (valueType)
@@ -114,16 +128,17 @@ namespace InterpretArgs
                 case ValueTypeEnum.String: t = typeof(string); break;
                 case ValueTypeEnum.Number: t = typeof(int); break;
             }
-            RegisterArg(name, valueDescription, description, mandatory, t, isArray);
+            RegisterArg(name, valueDescription, description, mandatory, t, isArray, defaultValue);
         }
 
 
 
-        private void RegisterArg(string name, string valueDescription, string description, bool mandatory, Type valueType, bool isArray)
+        private void RegisterArg(string name, string valueDescription, string description, bool mandatory, Type valueType, bool isArray, object defaultValue)
         {
             if (Arguments.ContainsKey(name.ToLower()))
                 throw new Exception("Argument already registerd.");
-
+            if (mandatory && defaultValue != null)
+                throw new Exception("Mandatory arguments can not have a default value.");
             
             Argument arg = new Argument(valueType); 
 
@@ -132,6 +147,12 @@ namespace InterpretArgs
             arg.Mandatory = mandatory;
             arg.IsArray = isArray;
             arg.ValueDescription = valueDescription;
+
+            if (defaultValue != null)
+            {
+                arg.SetValue(defaultValue, false);
+            }
+
             Arguments.Add(arg.Name, arg);
         }
 

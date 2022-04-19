@@ -129,5 +129,19 @@ namespace InterpretArgsTests
 	-pages number	page numbers
 ", s);
         }
+
+        [TestMethod]
+        public void TestDefaultValues()
+        {
+            var interpreter = new InterpretArgs.ArgInterpreter();
+            interpreter.RegisterArg("test", "test", "for testing", false, InterpretArgs.ArgInterpreter.ValueTypeEnum.String, false, "TEST");
+
+            interpreter.SetArgs();
+
+
+            var arg = interpreter.Arguments["test"];
+            Assert.IsFalse(arg.IsSet);
+            Assert.AreEqual(arg.StringVal, "TEST"); //Default value set above
+        }
     }   
 }

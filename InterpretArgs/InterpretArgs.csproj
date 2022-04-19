@@ -15,9 +15,9 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://www.nuget.org/packages/InterpretArgs/</PackageProjectUrl>
     <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>1.0.0.1</FileVersion>
+    <FileVersion>1.0.1</FileVersion>
     <PackageReleaseNotes>removed unnecessary references</PackageReleaseNotes>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DocumentationFile>bin\Debug\InterpretArgs.xml</DocumentationFile>

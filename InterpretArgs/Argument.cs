@@ -27,13 +27,14 @@ namespace InterpretArgs
         public DateTime DateVal { get; set; }
         public bool BoolVal { get; set; }
 
+     
         public Argument(Type typeOfValue)
         {
             TypeOfValue = typeOfValue;
             IsSet = false;
         }
 
-        public void SetValue(object val)
+        public void SetValue(object val, bool isSetFlag=true)
         {
             Type t = val.GetType();
 
@@ -61,7 +62,7 @@ namespace InterpretArgs
             if (t.Equals(typeof(string[])))
                 StringArrayVal = (string[])val;
 
-            IsSet = true;
+            IsSet = isSetFlag;
         }
     }
 
