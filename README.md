@@ -18,6 +18,8 @@ static void Main(string[] args)
     interpreter.RegisterFlag("test","Flags are on/off boolean");
     interpreter.RegisterArg("cmd","Arg is a named parameter with value behind like -cmd CUT", "Description for help", false, ArgInterpreter.ValueTypeEnum.String, false);
     interpreter.RegisterArg("pages", "Arrays have multiple values after the parameter like -pages 1 2 3", "Description", true, ArgInterpreter.ValueTypeEnum.Number, true);
+    //this arg will have a default value when no parameter is passed
+    interpreter.RegisterArg("servername","theservername", "Defaults to: filer", false, ArgInterpreter.ValueTypeEnum.String, false, "filer");
 
     //pass the actual environment arguments to interpreter
     interpreter.SetArgs(args);
