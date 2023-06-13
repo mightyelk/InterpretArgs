@@ -35,7 +35,7 @@ public class InterpretArgsTests
             interpreter.ParameterValue<int>("cid").Should().Be(12345);
             interpreter.ParameterValue<bool>("a").Should().BeTrue();
             interpreter.ParameterValue<string>("file").Should().Be("C:\\boot.ini");
-            interpreter.ParameterValue<float>("pi").Should().Be(3.1415927F);  //argument is more precise as float
+            interpreter.ParameterValue<float>("pi").Should().Be(3.1415927F);  //given argument is more precise than float can handle
             interpreter.ParameterValue<int[]>("multint").Should().BeEquivalentTo(new int[] { 1, 2, 3, 4 });
             interpreter.ParameterValue<string[]>("multstring").Should().BeEquivalentTo(new string[] { "asdf","qwer","yxcv","1234" });
             interpreter.ParameterValue<float[]>("multfloat").Should().BeEquivalentTo(new float[] { 1.2F, 3.4F, 5.6F });
