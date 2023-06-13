@@ -20,5 +20,10 @@ interpreter.AddFlag("a", "Just a flag")
             .Run();
 ```
 
+## Todo
+
+Mandatory parameters
+Usage text
+
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
