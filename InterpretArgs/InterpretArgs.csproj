@@ -1,25 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <OutputType>Library</OutputType>
-    <RootNamespace>MightyElk.InterpretArgs</RootNamespace>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Authors>MightyElk</Authors>
-    <Copyright>MightyElk 2021</Copyright>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <Description>Simple command line arguments</Description>
-    <RepositoryUrl>https://github.com/mightyelk/InterpretArgs</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>arguments</PackageTags>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://www.nuget.org/packages/InterpretArgs/</PackageProjectUrl>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>1.0.1</FileVersion>
-    <PackageReleaseNotes>removed unnecessary references</PackageReleaseNotes>
-    <Version>1.0.2</Version>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DocumentationFile>bin\Debug\InterpretArgs.xml</DocumentationFile>
-  </PropertyGroup>
+
 </Project>

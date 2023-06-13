@@ -1,42 +1,23 @@
 # About
 
-InterpretArgs is a C# (.Net) library for easy to use command line parameters.
+InterpretArgs is a C# (.Net Core) library for easy to use command line parameters.
 
 ## Usage
 
 Don't forget to add a reference to InterpretArgs.dll
 ```c#
-using InterpretArgs;
+var interpreter = Interpreter.CreateInterpreter();
 
-static void Main(string[] args)
-{
-    //create instance
-    var interpreter = new InterpretArgs.ArgInterpreter();
-    //register valid parameters with name and expected type
-
-    interpreter.RegisterDefault("Default parameter is the first thing after the exe, like a filename", ArgInterpreter.ValueTypeEnum.String);
-    interpreter.RegisterFlag("test","Flags are on/off boolean");
-    interpreter.RegisterArg("cmd","Arg is a named parameter with value behind like -cmd CUT", "Description for help", false, ArgInterpreter.ValueTypeEnum.String, false);
-    interpreter.RegisterArg("pages", "Arrays have multiple values after the parameter like -pages 1 2 3", "Description", true, ArgInterpreter.ValueTypeEnum.Number, true);
-    //this arg will have a default value when no parameter is passed
-    interpreter.RegisterArg("servername","theservername", "Defaults to: filer", false, ArgInterpreter.ValueTypeEnum.String, false, "filer");
-
-    //pass the actual environment arguments to interpreter
-    interpreter.SetArgs(args);
-
-    //do something
-    if (interpreter.Arguments["test"].IsSet)
-    {
-    }
-    //Default parameter
-    if (System.IO.File.Exists(interpreter.Arguments[""].StringVal))
-    {
-    }
-    //array
-    foreach(var page in interpreter.Arguments["pages"].IntArrayVal) 
-    { 
-    }
-}
+interpreter.AddFlag("a", "Just a flag")
+            .AddParameter<int[]>("pages", "-pages 1 2 4", "Pages to print")
+            .AddParameter<string>("file")
+            .AddParameter<DateTime>("start")
+            .OnError((e) =>
+            {
+                Console.WriteLine(e);
+            })
+            .SetArguments(Environment.GetCommandLineArgs())
+            .Run();
 ```
 
 ## License
