@@ -11,11 +11,17 @@ namespace InterpretArgs
         public bool IsSet;
         public bool Mandatory;
 
-        public Type ValueType;
-        public object Value;
         public string Name;
-        public string Description;
-        public string Example;
+        public Type ValueType;
 
+        public object? Value;
+        public string? Description;
+        public string? Example;
+
+        public Parameter(string name, Type type)
+        {
+            Name = name;
+            ValueType = type;
+        }
     }
 }

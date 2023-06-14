@@ -1,5 +1,6 @@
 using FluentAssertions;
 using FluentAssertions.Execution;
+using InterpretArgs;
 
 namespace TestProject1;
 
@@ -29,7 +30,6 @@ public class InterpretArgsTests
             .SetArguments(args)
             .Run();
 
-
         using (new AssertionScope())
         {
             interpreter.ParameterValue<int>("cid").Should().Be(12345);
@@ -42,9 +42,7 @@ public class InterpretArgsTests
             interpreter.ParameterValue<DateTime>("start").Should().Be(new DateTime(2022, 5, 12));
             interpreter.ParameterValue<DateTime>("end").Should().Be(new DateTime(2023, 12, 24));
         }
-
     }
-
 
     [Fact]
     public void ErrorHandlerTest ()
@@ -59,6 +57,43 @@ public class InterpretArgsTests
             .Run();
     }
 
+    [Fact]
+    public void MandatoryMissingTest()
+    {
+        var i = Interpreter.CreateInterpreter();
+        i.AddMandatoryParameter<int>("number")
+            .SetArguments("-file list.txt")
+            .OnError((e) =>
+            {
+                Console.WriteLine(e.Message);
+            });
 
+        Assert.Throws<MandatoryParameterMissingException>(() => i.Run());
+    }
+
+    [Fact]
+    public void UsageTextTest()
+    {
+        var interpreter = Interpreter.CreateInterpreter();
+
+        var args = "-a -cid 12345 -file C:\\boot.ini -multint 1 2 3 4 -start 12.05.2022".Split(' ');
+
+        interpreter.AddFlag("a", "Just a flag")
+            .AddParameter<int>("cid", "[int]", "Integer Number")
+            .AddParameter<string>("file", "[pdf]", "File to read")
+            .AddParameter<int[]>("multint", "[numbers]", "Multiple integers")
+            .AddParameter<DateTime>("start", "[date]", "Startdate")
+
+            .OnError((e) =>
+            {
+                Console.WriteLine(e);
+            })
+            .SetArguments(args);
+
+
+        var usage = interpreter.GetUsageText();
+        var help = interpreter.GetHelpText();
+ 
+    }
     
 }

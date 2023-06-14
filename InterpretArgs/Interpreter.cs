@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -10,7 +12,7 @@ public class Interpreter : IInterpreter
 {
     private List<string> commandlineArgs;
     private List<Parameter> parameters;
-    private Action<Exception> onErrorAction;
+    private Action<Exception>? onErrorAction;
 
     private Interpreter()
     {
@@ -24,19 +26,28 @@ public class Interpreter : IInterpreter
     }
     public IInterpreter AddParameter<T>(string name)
     {
-        return AddParameter<T>(name, "", "");
+        return AddParameter<T>(name, "", "", false);
     }
     public IInterpreter AddParameter<T>(string name, string example, string helpText)
     {
-        parameters.Add(new Parameter()
+        return AddParameter<T>(name,example , helpText, false);
+    }
+    public IInterpreter AddParameter<T>(string name, string example, string helpText, bool mandatory)
+    {
+        parameters.Add(new Parameter(name, typeof(T))
         {
-            Name = name,
-            ValueType = typeof(T),
             Description = helpText,
-            Example = example
+            Example = example,
+            Mandatory= mandatory
         });
         return this;
     }
+
+    public IInterpreter AddMandatoryParameter<T>(string name)
+    {
+        return AddParameter<T>(name, "", "",true);
+    }
+
 
     public IInterpreter AddFlag(string flag)
     {
@@ -44,10 +55,8 @@ public class Interpreter : IInterpreter
     }
     public IInterpreter AddFlag(string flag, string helpText) 
     {
-        parameters.Add(new Parameter()
+        parameters.Add(new Parameter(flag, typeof(bool))
         {
-            Name = flag,
-            ValueType = typeof(bool),
             Description=helpText,
         });
         return this;
@@ -70,15 +79,24 @@ public class Interpreter : IInterpreter
         return this;
     }
 
+
+
+    /// <summary>
+    /// Assigns the values from arguments to the parameters.
+    /// </summary>
+    /// <exception cref="MandatoryParameterMissingException" />
     public void Run()
     {
-
-
         try
         {
             AssignValues();
 
-        
+            CheckMandatoryParameters();
+                
+        }
+        catch (MandatoryParameterMissingException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -93,6 +111,14 @@ public class Interpreter : IInterpreter
         }
     }
 
+    private void CheckMandatoryParameters()
+    {
+        var unsetMandatoryParameters = parameters.Where(p => p.Mandatory && !p.IsSet).Select(p=> p.Name);
+        if (unsetMandatoryParameters.Any())
+        {
+            throw new MandatoryParameterMissingException(unsetMandatoryParameters.ToArray());
+        }
+    }
 
     private void AssignValues()
     {
@@ -213,11 +239,13 @@ public class Interpreter : IInterpreter
             .FirstOrDefault();
 
         if (param is null)
-            return default;
+            return Activator.CreateInstance<T>();
 
         if (param.ValueType.IsArray)
         {
             var elementType=param.ValueType.GetElementType();
+            if (elementType is null)
+                return Activator.CreateInstance<T>();
             var listType = typeof(List<>).MakeGenericType(elementType);
 
 
@@ -225,10 +253,15 @@ public class Interpreter : IInterpreter
             if (elementType.Equals(typeof(string)))
             {
                 var stringArray = param.Value as string[];
-                return (T)Convert.ChangeType(stringArray, typeof(T));
+                var asArray = (T?)Convert.ChangeType(stringArray, typeof(T));
+                if (asArray is null)
+                    return Activator.CreateInstance<T>();
+                return asArray;
             }
             
             var list = Convert.ChangeType(param.Value, listType) as IList;
+            if (list is null)
+                return Activator.CreateInstance<T>();
             var array = Array.CreateInstance(elementType, list.Count);
 
             list.CopyTo(array, 0);
@@ -236,9 +269,36 @@ public class Interpreter : IInterpreter
 
         }
 
+        if (param.Value is null)
+            return Activator.CreateInstance<T>();
         return (T)param.Value;
-            
     }
 
-   
+    public string GetUsageText()
+    {
+        var sb = new StringBuilder();
+
+        foreach (var param in parameters)
+        {
+            sb.Append("-"+param.Name);
+            if (!param.ValueType.Equals(typeof(bool)))
+                sb.Append(" " + param.Example);
+            sb.Append(' ');
+        }
+        return sb.ToString();
+    }
+
+    public string GetHelpText()
+    {
+        var sb = new StringBuilder();
+
+        foreach (var param in parameters)
+        {
+            sb.Append("-" + param.Name);
+            sb.AppendLine("\t" + param.Description);
+        }
+        return sb.ToString();
+    }
+
+
 }
