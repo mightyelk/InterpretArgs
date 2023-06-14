@@ -18,13 +18,13 @@ interpreter.AddFlag("a", "Just a flag")
             })
             .SetArguments(Environment.GetCommandLineArgs())
             .Run();
+
+if (interpreter.ParameterValue<int>("cid")==12345)
+{
+	//Do something
+}
 ```
 
-## Todo
-
-Mandatory parameters
-
-Usage text
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
